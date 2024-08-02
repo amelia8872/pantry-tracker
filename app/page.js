@@ -143,12 +143,13 @@ export default function Home() {
       justifyContent="center"
       alignItems="center"
       gap={2}
+      sx={{ ml: 5 }}
     >
       <AddItemModal open={open} handleClose={handleClose} addItem={addItem} />
 
       {/* <Box border="1px solid #333"> */}
       <Box>
-        <Box width="1750px" height="100px" bgcolor="#ADD8E6">
+        <Box width="1750px" height="100px" bgcolor="#ADD8E6" sx={{ mb: 2 }}>
           <Typography
             variant="h2"
             color="#333"
@@ -160,16 +161,12 @@ export default function Home() {
           </Typography>
         </Box>
 
-        <Button
-          variant="contained"
-          onClick={() => {
-            handleOpen();
-          }}
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          width="1000px"
+          mb={2}
         >
-          Add New Item
-        </Button>
-
-        <Box display="flex" justifyContent="space-between" width="800px" mb={2}>
           <TextField
             label="Search"
             variant="outlined"
@@ -178,7 +175,7 @@ export default function Home() {
             onChange={handleSearchChange}
             sx={{ mr: 2 }}
           />
-          <FormControl variant="outlined" fullWidth>
+          <FormControl variant="outlined" fullWidth sx={{ mr: 2 }}>
             <InputLabel>Category</InputLabel>
             <Select
               value={selectedCategory}
@@ -192,6 +189,16 @@ export default function Home() {
               ))}
             </Select>
           </FormControl>
+
+          <Button
+            variant="contained"
+            fullWidth
+            onClick={() => {
+              handleOpen();
+            }}
+          >
+            Add New Item
+          </Button>
         </Box>
 
         <Grid
