@@ -43,6 +43,7 @@ export default function Home() {
     });
 
     setInventory(inventoryList);
+    console.log(inventoryList);
   };
 
   const addItem = async ({ name, category, quantity, expiration_date }) => {
@@ -63,20 +64,30 @@ export default function Home() {
     await updateInventory();
   };
 
-  const removeItem = async (item) => {
-    const docRef = doc(db, 'inventory', item);
+  const incrementItem = async (name) => {
+    const docRef = doc(db, 'inventory', name);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
       const { quantity } = docSnap.data();
-      if (quantity === 1) {
-        await deleteDoc(docRef);
-      } else {
-        await setDoc(docRef, { quantity: quantity - 1 });
-      }
+      await setDoc(docRef, { ...docSnap.data(), quantity: quantity + 1 });
+      await updateInventory();
     }
+  };
 
-    await updateInventory();
+  const decrementItem = async (name) => {
+    const docRef = doc(db, 'inventory', name);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const { quantity } = docSnap.data();
+      if (quantity > 1) {
+        await setDoc(docRef, { ...docSnap.data(), quantity: quantity - 1 });
+      } else {
+        await deleteDoc(docRef);
+      }
+      await updateInventory();
+    }
   };
 
   const handleOpen = () => setOpen(true);
@@ -133,8 +144,8 @@ export default function Home() {
                 quantity={quantity}
                 category={category}
                 expiration_date={expiration_date}
-                addItem={addItem}
-                removeItem={removeItem}
+                incrementItem={incrementItem}
+                decrementItem={decrementItem}
               />
             </Grid>
           ))}

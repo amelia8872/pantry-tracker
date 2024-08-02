@@ -6,13 +6,12 @@ const InventoryCard = ({
   quantity,
   category,
   expiration_date,
-  addItem,
-  removeItem,
+  incrementItem,
+  decrementItem,
 }) => {
-  const expirationDateString = expiration_date?.seconds
-    ? new Date(expiration_date.seconds * 1000).toLocaleDateString()
-    : 'N/A';
-
+  // const expirationDateString = expiration_date?.seconds
+  //   ? new Date(expiration_date.seconds * 1000).toLocaleDateString()
+  //   : 'N/A';
   return (
     <Card variant="outlined" sx={{ minWidth: 800 }}>
       <CardContent
@@ -26,20 +25,28 @@ const InventoryCard = ({
         <Typography variant="h5" component="div" textAlign="center">
           {name.charAt(0).toUpperCase() + name.slice(1)}
         </Typography>
-        <Typography variant="h5" component="div" textAlign="center">
-          Count: {quantity}
-        </Typography>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <Button variant="outlined" onClick={() => decrementItem(name)}>
+            -
+          </Button>
+          <Typography variant="h5" component="div" textAlign="center">
+            {quantity}
+          </Typography>
+          <Button variant="outlined" onClick={() => incrementItem(name)}>
+            +
+          </Button>
+        </Stack>
         <Typography variant="h5" component="div" textAlign="center">
           Category: {category}
         </Typography>
         <Typography variant="h5" component="div" textAlign="center">
-          Expiration date: {expirationDateString}
+          Expiration date: {expiration_date}
         </Typography>
-        <Stack direction="row" spacing={2}>
+        {/* <Stack direction="row" spacing={2}>
           <Button variant="contained" onClick={() => removeItem(name)}>
             Remove
           </Button>
-        </Stack>
+        </Stack> */}
       </CardContent>
     </Card>
   );
