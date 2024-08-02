@@ -9,6 +9,10 @@ const InventoryCard = ({
   addItem,
   removeItem,
 }) => {
+  const expirationDateString = expiration_date?.seconds
+    ? new Date(expiration_date.seconds * 1000).toLocaleDateString()
+    : 'N/A';
+
   return (
     <Card variant="outlined" sx={{ minWidth: 800 }}>
       <CardContent
@@ -28,9 +32,9 @@ const InventoryCard = ({
         <Typography variant="h5" component="div" textAlign="center">
           Category: {category}
         </Typography>
-        {/* <Typography variant="h5" component="div" textAlign="center">
-          Expiration date: {expiration_date}
-        </Typography> */}
+        <Typography variant="h5" component="div" textAlign="center">
+          Expiration date: {expirationDateString}
+        </Typography>
         <Stack direction="row" spacing={2}>
           <Button variant="contained" onClick={() => removeItem(name)}>
             Remove
