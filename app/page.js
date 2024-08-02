@@ -1,7 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { firestore } from '../firebase';
-import Image from 'next/image';
+import { db } from '../firebase';
+import InventoryCard from './components/InventoryCard';
+import AddItemModal from './components/AddItemModal';
 import {
   Box,
   Modal,
@@ -9,6 +10,7 @@ import {
   Stack,
   TextField,
   Button,
+  Grid,
 } from '@mui/material';
 import {
   collection,
@@ -24,9 +26,12 @@ export default function Home() {
   const [inventory, setInventory] = useState([]);
   const [open, setOpen] = useState(false);
   const [itemName, setItemName] = useState('');
+  const [itemCategory, setItemCategory] = useState('');
+  const [itemExpirationDate, setItemExpirationDate] = useState('');
+  const [itemQuantity, setItemQuantity] = useState(0);
 
   const updateInventory = async () => {
-    const snapshot = query(collection(firestore, 'inventory'));
+    const snapshot = query(collection(db, 'inventory'));
     const docs = await getDocs(snapshot);
     const inventoryList = [];
 
@@ -40,23 +45,26 @@ export default function Home() {
     setInventory(inventoryList);
   };
 
-  const addItem = async (item) => {
-    const docRef = doc(firestore, 'inventory', item);
+  const addItem = async ({ name, category, quantity, expiration_date }) => {
+    const docRef = doc(db, 'inventory', name);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      const { quantity } = docSnap.data();
-
-      await setDoc(docRef, { quantity: quantity + 1 });
+      const { quantity: currentQuantity } = docSnap.data();
+      await setDoc(docRef, {
+        category,
+        quantity: currentQuantity + quantity,
+        expiration_date,
+      });
     } else {
-      await setDoc(docRef, { quantity: 1 });
+      await setDoc(docRef, { category, quantity, expiration_date });
     }
 
     await updateInventory();
   };
 
   const removeItem = async (item) => {
-    const docRef = doc(firestore, 'inventory', item);
+    const docRef = doc(db, 'inventory', item);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
@@ -88,55 +96,10 @@ export default function Home() {
       alignItems="center"
       gap={2}
     >
-      <Modal open={open} onClose={handleClose}>
-        <Box
-          position="absolute"
-          top="50%"
-          left="50%"
-          width={400}
-          bgcolor="white"
-          border="2px solid #000"
-          boxShadow={24}
-          p={4}
-          display="flex"
-          flexDirection="column"
-          gap={3}
-          sx={{
-            transform: 'translate(-50%,-50%)',
-          }}
-        >
-          <Typography variant="h6">Add Item</Typography>
-          <Stack width="100%" direction="row" spacing={2}>
-            <TextField
-              variant="outlined"
-              fullWidth
-              value={itemName}
-              onChange={(e) => setItemName(e.target.value)}
-            ></TextField>
-            <Button
-              variant="outlined"
-              onClick={() => {
-                addItem(itemName);
-                setItemName('');
-                handleClose();
-              }}
-            >
-              Add
-            </Button>
-          </Stack>
-        </Box>
-      </Modal>
-      {/* <Typography variant="h1">Inventory Management</Typography> */}
-      <Button
-        variant="contained"
-        onClick={() => {
-          handleOpen();
-        }}
-      >
-        Add New Item
-      </Button>
+      <AddItemModal open={open} handleClose={handleClose} addItem={addItem} />
 
-      <Box border="1px solid #333">
+      {/* <Box border="1px solid #333"> */}
+      <Box>
         <Box width="800px" height="100px" bgcolor="#ADD8E6">
           <Typography
             variant="h2"
@@ -149,37 +112,33 @@ export default function Home() {
           </Typography>
         </Box>
 
-        <Stack width="800px" height="300px" overflow="auto" spacing={2}>
-          {inventory.map(({ name, quantity }) => {
-            return (
-              <Box
-                key={name}
-                width="100%"
-                minHeight="150px"
-                display="flex"
-                alignItems="center"
-                justifyContent="space-between"
-                bgcolor="#f0f0f0"
-                padding={5}
-              >
-                <Typography variant="h3" color="#333" textAlign="center">
-                  {name.charAt(0).toUpperCase() + name.slice(1)}
-                </Typography>
-                <Typography variant="h3" color="#333" textAlign="center">
-                  {quantity}
-                </Typography>
-                <Stack direction="row" spacing={2}>
-                  <Button variant="contained" onClick={() => addItem(name)}>
-                    Add
-                  </Button>
-                  <Button variant="contained" onClick={() => removeItem(name)}>
-                    Remove
-                  </Button>
-                </Stack>
-              </Box>
-            );
-          })}
-        </Stack>
+        <Button
+          variant="contained"
+          onClick={() => {
+            handleOpen();
+          }}
+        >
+          Add New Item
+        </Button>
+
+        <Grid
+          container
+          spacing={{ xs: 2, md: 3 }}
+          columns={{ xs: 4, sm: 8, md: 12 }}
+        >
+          {inventory.map(({ name, quantity, category, expiration_date }) => (
+            <Grid item key={name} flexDirection={{ xs: 'column', sm: 'row' }}>
+              <InventoryCard
+                name={name}
+                quantity={quantity}
+                category={category}
+                expiration_date={expiration_date}
+                addItem={addItem}
+                removeItem={removeItem}
+              />
+            </Grid>
+          ))}
+        </Grid>
       </Box>
     </Box>
   );
