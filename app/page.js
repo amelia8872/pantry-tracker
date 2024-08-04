@@ -3,11 +3,10 @@ import { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import InventoryCard from './components/InventoryCard';
 import AddItemModal from './components/AddItemModal';
+import EditItemModal from './components/EditItemModal';
 import {
   Box,
-  Modal,
   Typography,
-  Stack,
   TextField,
   Button,
   Grid,
@@ -45,12 +44,10 @@ const categories = [
 export default function Home() {
   const [inventory, setInventory] = useState([]);
   const [open, setOpen] = useState(false);
-  const [itemName, setItemName] = useState('');
-  const [itemCategory, setItemCategory] = useState('');
-  const [itemExpirationDate, setItemExpirationDate] = useState('');
-  const [itemQuantity, setItemQuantity] = useState(0);
+  const [editOpen, setEditOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedItem, setSelectedItem] = useState(null);
 
   const updateInventory = async () => {
     const snapshot = query(collection(db, 'inventory'));
@@ -65,7 +62,6 @@ export default function Home() {
     });
 
     setInventory(inventoryList);
-    console.log(inventoryList);
   };
 
   const addItem = async ({ name, category, quantity, expiration_date }) => {
@@ -112,8 +108,21 @@ export default function Home() {
     }
   };
 
+  const updateItem = async (updatedItem) => {
+    const { name, category, quantity, expiration_date } = updatedItem;
+    const docRef = doc(db, 'inventory', name);
+    await setDoc(docRef, { category, quantity, expiration_date });
+    await updateInventory();
+  };
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  const handleEditOpen = (item) => {
+    setSelectedItem(item);
+    setEditOpen(true);
+  };
+  const handleEditClose = () => setEditOpen(false);
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -140,42 +149,51 @@ export default function Home() {
       height="100vh"
       display="flex"
       flexDirection="column"
-      justifyContent="center"
+      justifyContent="flex-start"
       alignItems="center"
       gap={2}
-      sx={{ ml: 5 }}
+      sx={{ mt: 4, p: 2 }}
     >
       <AddItemModal open={open} handleClose={handleClose} addItem={addItem} />
+      <EditItemModal
+        open={editOpen}
+        handleClose={handleEditClose}
+        item={selectedItem}
+        updateItem={updateItem}
+      />
 
-      {/* <Box border="1px solid #333"> */}
-      <Box>
-        <Box width="1750px" height="100px" bgcolor="#ADD8E6" sx={{ mb: 2 }}>
-          <Typography
-            variant="h2"
-            color="#333"
-            alignItems="center"
-            display="flex"
-            justifyContent="center"
-          >
-            Inventory Items
-          </Typography>
-        </Box>
+      <Box width="100%" maxWidth="1750px" mb={2}>
+        <Typography
+          variant="h2"
+          color="#333"
+          alignItems="center"
+          display="flex"
+          justifyContent="center"
+          p={2}
+          sx={{ backgroundColor: '#ADD8E6', mb: 2 }}
+        >
+          Inventory Items
+        </Typography>
 
         <Box
+          width="100%"
           display="flex"
+          alignItems="center"
           justifyContent="space-between"
-          width="1000px"
           mb={2}
+          sx={{ flexWrap: 'wrap' }}
         >
           <TextField
             label="Search"
             variant="outlined"
-            fullWidth
             value={searchQuery}
             onChange={handleSearchChange}
-            sx={{ mr: 2 }}
+            sx={{ flexGrow: 1, mr: 2, mb: 1, minWidth: '250px' }}
           />
-          <FormControl variant="outlined" fullWidth sx={{ mr: 2 }}>
+          <FormControl
+            variant="outlined"
+            sx={{ flexGrow: 1, mr: 2, mb: 1, minWidth: '150px' }}
+          >
             <InputLabel>Category</InputLabel>
             <Select
               value={selectedCategory}
@@ -192,10 +210,8 @@ export default function Home() {
 
           <Button
             variant="contained"
-            fullWidth
-            onClick={() => {
-              handleOpen();
-            }}
+            sx={{ mb: 1, minWidth: '150px' }}
+            onClick={handleOpen}
           >
             Add New Item
           </Button>
@@ -208,7 +224,7 @@ export default function Home() {
         >
           {filteredInventory.map(
             ({ name, quantity, category, expiration_date }) => (
-              <Grid item key={name} flexDirection={{ xs: 'column', sm: 'row' }}>
+              <Grid item key={name} xs={12} sm={6} md={4}>
                 <InventoryCard
                   name={name}
                   quantity={quantity}
@@ -216,6 +232,7 @@ export default function Home() {
                   expiration_date={expiration_date}
                   incrementItem={incrementItem}
                   decrementItem={decrementItem}
+                  openEditModal={handleEditOpen}
                 />
               </Grid>
             )

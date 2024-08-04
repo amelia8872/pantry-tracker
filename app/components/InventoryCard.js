@@ -6,6 +6,7 @@ import {
   Button,
   Stack,
   Grid,
+  Box,
 } from '@mui/material';
 
 const InventoryCard = ({
@@ -15,12 +16,10 @@ const InventoryCard = ({
   expiration_date,
   incrementItem,
   decrementItem,
+  openEditModal,
 }) => {
-  // const expirationDateString = expiration_date?.seconds
-  //   ? new Date(expiration_date.seconds * 1000).toLocaleDateString()
-  //   : 'N/A';
   return (
-    <Card variant="outlined" sx={{ minWidth: 800 }}>
+    <Card variant="outlined" sx={{ width: '100%', position: 'relative' }}>
       <CardContent>
         <Grid container spacing={2}>
           <Grid item xs={12}>
@@ -47,16 +46,34 @@ const InventoryCard = ({
             </Stack>
           </Grid>
           <Grid item xs={12}>
-            <Typography variant="h5" component="div" textAlign="center">
+            <Typography variant="h6" component="div" textAlign="center">
               Category: {category}
             </Typography>
           </Grid>
           <Grid item xs={12}>
-            <Typography variant="h5" component="div" textAlign="center">
+            <Typography variant="h6" component="div" textAlign="center">
               Expiration date: {expiration_date}
             </Typography>
           </Grid>
         </Grid>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            position: 'absolute',
+            bottom: 16,
+            right: 16,
+          }}
+        >
+          <Button
+            variant="contained"
+            onClick={() =>
+              openEditModal({ name, quantity, category, expiration_date })
+            }
+          >
+            Edit
+          </Button>
+        </Box>
       </CardContent>
     </Card>
   );
